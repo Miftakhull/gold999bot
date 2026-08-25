@@ -1,6 +1,10 @@
 """Orkestrator utama Gold AI Signal Bot."""
+import csv
 import os
+import subprocess
 import sys
+import time
+import urllib.request
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -20,6 +24,48 @@ import tracker
 from indicators import add_indicators, atr, ema, swing_low
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_RAW = "https://raw.githubusercontent.com/Miftakhull/gold999bot/main/signals_log.csv"
+
+
+def _already_sent_remote(strategy, direction, cooldown_hours):
+    """Cek via repo GitHub: apakah sinyal serupa baru saja dikirim mesin lain (anti-dobel)."""
+    try:
+        url = f"{REPO_RAW}?t={int(time.time())}"
+        with urllib.request.urlopen(url, timeout=10) as r:
+            rows = list(csv.reader(r.read().decode().splitlines()))
+        now = datetime.now(timezone.utc)
+        for row in rows[1:]:
+            if (len(row) > 11 and row[1] == strategy and row[2] == direction
+                    and row[10] in ("ACTIVE", "TP1", "RUNNING", "WIN", "RUNNER-WIN", "LOSS", "BE")):
+                t = datetime.fromisoformat(row[0])
+                if (now - t).total_seconds() < cooldown_hours * 3600:
+                    return True
+    except Exception as e:
+        print(f"Cek remote skip: {e}")
+    return False
+
+
+def _push_log():
+    """Push log sinyal ke GitHub supaya mesin lain tahu (best-effort)."""
+    try:
+        subprocess.run(
+            ["git", "add", "signals_log.csv"],
+            cwd=ROOT, capture_output=True, timeout=30,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "signal log"],
+            cwd=ROOT, capture_output=True, timeout=30,
+        )
+        subprocess.run(
+            ["git", "pull", "--rebase", "-q", "origin", "main"],
+            cwd=ROOT, capture_output=True, timeout=60,
+        )
+        subprocess.run(
+            ["git", "push", "-q", "origin", "main"],
+            cwd=ROOT, capture_output=True, timeout=60,
+        )
+    except Exception as e:
+        print(f"Push log skip: {e}")
 
 
 def load_secrets():
@@ -113,9 +159,15 @@ def main():
                                          trend_sig["direction"])
         if last_t and (now - last_t).total_seconds() < cooldown:
             gate_trend = False
+        elif _already_sent_remote("TREND", trend_sig["direction"], cfg["guards"]["cooldown_hours"]):
+            print("Anti-dobel: mesin lain sudah kirim sinyal TREND serupa.")
+            gate_trend = False
     if gate_smc:
         last_s = logger.last_signal_time("SMC", smc_sig["direction"])
         if last_s and (now - last_s).total_seconds() < cooldown:
+            gate_smc = False
+        elif _already_sent_remote("SMC", smc_sig["direction"], cfg["guards"]["cooldown_hours"]):
+            print("Anti-dobel: mesin lain sudah kirim sinyal SMC serupa.")
             gate_smc = False
     if logger.signals_today() >= g["max_signals_per_day"] and (gate_trend or gate_smc):
         print("Kuota sinyal harian habis.")
@@ -203,8 +255,10 @@ def main():
 
     if ok_trend:
         _send(trend_sig, ai["trend"]["verdict"], ai["trend"]["confidence"], is_conf=confluence)
+        _push_log()
     if ok_smc and not (confluence and ok_trend):
         _send(smc_sig, ai["smc"]["verdict"], ai["smc"]["confidence"])
+        _push_log()
     if confluence:
         pass  # trend sudah terkirim sebagai CONFLUENCE
 

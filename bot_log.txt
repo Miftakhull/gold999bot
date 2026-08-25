@@ -1,0 +1,2 @@
+bias=range trend_score=0 trend_sig=False smc_sig=False freshOB=1 sweeps=[{'level': 'PDL', 'price': 4629.91452, 'dir': 'bull'}]
+bias=range trend_score=0 trend_sig=False smc_sig=False freshOB=1 sweeps=[]

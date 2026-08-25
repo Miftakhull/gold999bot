@@ -17,6 +17,8 @@ app = modal.App("gold-signal-bot")
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install_from_requirements("requirements.txt")
+    .add_local_dir("src", remote_path="/app/src")
+    .add_local_file("config.yaml", remote_path="/app/config.yaml")
 )
 
 volume = modal.Volume.from_name("goldbot-data", create_if_missing=True)
@@ -24,7 +26,7 @@ volume = modal.Volume.from_name("goldbot-data", create_if_missing=True)
 
 @app.function(
     image=image,
-    schedule=modal.Schedule.every(minutes=15),
+    schedule=modal.Cron("12-59/15 * * * *"),  # offset +12 menit: PC jalan duluan (menit 9/24/39/54)
     secrets=[modal.Secret.from_name("goldbot-secrets")],
     volumes={"/data": volume},
     timeout=300,
