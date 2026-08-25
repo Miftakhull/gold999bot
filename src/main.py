@@ -27,6 +27,12 @@ from indicators import add_indicators, atr, ema, swing_low
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO_RAW = "https://raw.githubusercontent.com/Miftakhull/gold999bot/main/signals_log.csv"
 
+# GitHub Actions = tracker-only (anti dobel AI & sinyal dengan Modal).
+# Modal = satu-satunya mesin sinyal. Escapes hatch: set env GH_SIGNALS=1
+# di GitHub kalau suatu saat mau GH ikut kirim sinyal.
+TRACKER_ONLY = os.environ.get("GITHUB_ACTIONS") == "true" \
+    and os.environ.get("GH_SIGNALS", "") != "1"
+
 
 def load_secrets():
     secrets = {}
@@ -130,6 +136,13 @@ def main():
             else:
                 s["trail_value"] = float(df_m15["ema20"].iloc[-1])
     tracker.check_active(state, last_price, cfg, tg, secrets)
+
+    # ---------- 2b. Mode tracker-only (GitHub Actions) ----------
+    if TRACKER_ONLY:
+        print("Mode tracker-only (GitHub Actions): sinyal & AI ditangani Modal.")
+        tracker.save_state(state)
+        _post_actions(state, secrets, cfg)
+        return
 
     # ---------- 3. Jalur TREND & SMC (hanya saat candle M15 baru) ----------
     if new_m15:

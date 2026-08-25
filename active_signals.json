@@ -1,14 +1,14 @@
 {
  "active": [],
  "tg_offset": 211381621,
- "last_bar": "2026-08-25 14:00:00+00:00",
+ "last_bar": "2026-08-25 15:15:00+00:00",
  "weekly_sent": "",
  "bias_cache": {
-  "m15_bar": "2026-08-25 14:00:00+00:00",
+  "m15_bar": "2026-08-25 15:15:00+00:00",
   "bias": {
    "direction": "range",
    "structure": "range",
-   "slope": -5.875700513702213
+   "slope": -4.499731612616415
   },
   "bias_m15": "range",
   "h1_levels": [
@@ -18,7 +18,7 @@
    },
    {
     "name": "PDL",
-    "price": 4531.03761
+    "price": 4545.86781
    },
    {
     "name": "Asia High",
