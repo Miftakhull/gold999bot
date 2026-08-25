@@ -44,7 +44,7 @@ jobs:
         run: python src/main.py
 
       - name: Dummy signal test (manual only)
-        if: ${{ inputs.dummy_test == true || inputs.dummy_test == 'true' }}
+        if: github.event.inputs.dummy_test == 'true' || inputs.dummy_test == true || inputs.dummy_test == 'true'
         env:
           TWELVEDATA_KEY: ${{ secrets.TWELVEDATA_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
