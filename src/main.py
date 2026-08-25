@@ -158,7 +158,20 @@ def main():
                 "counter_trend": smc_sig.get("counter_trend") if smc_sig else False,
                 "levels": {k: smc_sig[k] for k in ("entry", "sl", "tp1", "tp2")} if smc_sig else None},
     }
-    ai = ai_analyst.validate(secrets, cfg, payload, chart_m15, chart_h1)
+
+    # ---------- AI validasi (anti-mati: kalau AI gagal, skip siklus ini, chain tetap jalan) ----------
+    ai = None
+    for attempt in (1, 2):
+        try:
+            ai = ai_analyst.validate(secrets, cfg, payload, chart_m15, chart_h1)
+            break
+        except Exception as e:
+            print(f"AI attempt {attempt} gagal: {e}")
+    if ai is None:
+        print("AI tidak bisa dihubungi — sinyal siklus ini dilewati (tidak crash).")
+        tracker.save_state(state)
+        _post_actions(state, secrets, cfg, df_m15)
+        return
     print("AI:", ai)
 
     # ---------- 8. Gate AI ----------

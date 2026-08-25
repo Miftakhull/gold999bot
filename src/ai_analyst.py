@@ -54,14 +54,27 @@ def validate(secrets, cfg, data_payload, chart_m15_png, chart_h1_png):
         ],
     }
     url = secrets["AI_BASE_URL"].rstrip("/") + "/chat/completions"
+    origin = "/".join(secrets["AI_BASE_URL"].rstrip("/").split("/")[:3])
     r = requests.post(
         url, json=body, timeout=cfg["ai"]["timeout"],
         headers={
             "Authorization": f"Bearer {secrets['AI_API_KEY']}",
             "Content-Type": "application/json",
             "User-Agent": BROWSER_UA,
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+            "Origin": origin,
+            "Referer": origin + "/",
+            "sec-ch-ua": '"Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
         },
     )
+    if r.status_code == 403:
+        raise PermissionError("AI endpoint 403 (Cloudflare blok IP ini)")
     r.raise_for_status()
     content = r.json()["choices"][0]["message"]["content"]
     content = content.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
