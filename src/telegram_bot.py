@@ -64,11 +64,9 @@ DISCLAIMER = ("\n\n⚠️ Sinyal otomatis, bukan nasihat keuangan. "
               "Backtest ≠ hasil masa depan. Risiko & keputusan tanggung jawab kamu.")
 
 
-def format_signal(sig, cfg_tg, confluence=False, counter=False):
-    tag = "💎 CONFLUENCE" if confluence else \
-        ("📈 TREND" if sig["strategy"] == "TREND" else "🧠 SMC")
+def format_signal(sig, cfg_tg):
+    tag = "📈 TREND" if sig["strategy"] == "TREND" else "🧠 SMC"
     arrow = "🟢 BUY" if sig["direction"] == "Buy" else "🔴 SELL"
-    pip_val = 10  # per 1.00 lot XAUUSD, 1 pip = $0.1/point -> pakai dollar jarak
     equity = cfg_tg["account_equity"]
     risk_usd = equity * cfg_tg["risk_pct"] / 100
     sl_dist = abs(sig["entry"] - sig["sl"])
@@ -80,8 +78,6 @@ def format_signal(sig, cfg_tg, confluence=False, counter=False):
         extra = f"\n📋 Checklist: {sig['score']}/{sig['max_score']}"
     elif sig.get("counter_trend"):
         extra = "\n⚠️ Counter-trend (sweep + CHoCH)"
-    if confluence:
-        extra += "\n🔥 2 strategi sepakat arah"
     return (
         f"<b>{tag} | XAUUSD {arrow}</b>\n"
         f"{'─' * 22}\n"

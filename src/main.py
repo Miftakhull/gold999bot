@@ -226,26 +226,19 @@ def main():
         return
     print("AI:", ai)
 
-    # ---------- 8. Gate AI ----------
+    # ---------- 8. Gate AI (2 strategi full independen) ----------
     gc = cfg["gate"]
     ok_trend = gate_trend and ai["trend"]["verdict"] == "perfect" \
         and ai["trend"]["confidence"] >= gc["perfect_confidence"]
     ok_smc = gate_smc and ai["smc"]["verdict"] == "perfect" \
         and ai["smc"]["confidence"] >= gc["perfect_confidence"]
 
-    # OCO: bertentangan arah -> tidak ada yang dikirim
-    if ok_trend and ok_smc and trend_sig["direction"] != smc_sig["direction"]:
-        print("OCO: dua jalur bertentangan, tidak kirim.")
-        ok_trend = ok_smc = False
-
-    confluence = ok_trend and ok_smc
-
-    def _send(sig, verdict, conf, is_conf=False):
+    def _send(sig, verdict, conf):
         reasoning = ai[sig["strategy"].lower()].get("reasoning", "")
         sig["reasoning"] = reasoning
         sig["hold"] = cfg["trend"]["hold_after_tp2"] if sig["strategy"] == "TREND" \
             else cfg["smc"]["hold_after_tp2"]
-        caption = tg.format_signal(sig, cfg["telegram"], confluence=is_conf)
+        caption = tg.format_signal(sig, cfg["telegram"])
         tg.send_photo(secrets["TELEGRAM_BOT_TOKEN"], secrets["TELEGRAM_CHAT_ID"],
                       chart_m15, caption)
         logger.append_signal(sig, verdict, conf, reasoning)
@@ -253,14 +246,13 @@ def main():
                            cfg["trend"]["runner_trail"] if sig["strategy"] == "TREND"
                            else "ema20")
 
+    # Kirim masing-masing yang valid, tanpa penggabungan / pembatalan silang
     if ok_trend:
-        _send(trend_sig, ai["trend"]["verdict"], ai["trend"]["confidence"], is_conf=confluence)
+        _send(trend_sig, ai["trend"]["verdict"], ai["trend"]["confidence"])
         _push_log()
-    if ok_smc and not (confluence and ok_trend):
+    if ok_smc:
         _send(smc_sig, ai["smc"]["verdict"], ai["smc"]["confidence"])
         _push_log()
-    if confluence:
-        pass  # trend sudah terkirim sebagai CONFLUENCE
 
     tracker.save_state(state)
     _post_actions(state, secrets, cfg, df_m15)
