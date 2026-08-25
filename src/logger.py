@@ -3,7 +3,8 @@ import csv
 import os
 from datetime import datetime, timezone
 
-CSV_PATH = "signals_log.csv"
+DATA_DIR = os.environ.get("BOT_DATA_DIR", ".")
+CSV_PATH = os.path.join(DATA_DIR, "signals_log.csv")
 FIELDS = ["time", "strategy", "direction", "entry", "sl", "tp1", "tp2", "risk",
           "score", "ai_verdict", "ai_confidence", "status", "result_r", "closed_time", "reasoning"]
 

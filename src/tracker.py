@@ -4,7 +4,8 @@ import os
 
 import logger
 
-STATE_PATH = "active_signals.json"
+DATA_DIR = os.environ.get("BOT_DATA_DIR", ".")
+STATE_PATH = os.path.join(DATA_DIR, "active_signals.json")
 
 
 def load_state():
