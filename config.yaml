@@ -26,8 +26,8 @@ trend:
   ema_slow: 200          # H1
   ema_slope_ref: 20      # H1
   ema_entry: 20          # M15 (untuk trailing & slope)
-  swing_period: 20       # swing high/low M15 untuk breakout
-  min_score: 5           # checklist wajib >= 5 dari 7
+  swing_period: 14       # swing high/low M15 untuk breakout (dilonggarkan dari 20)
+  min_score: 4           # checklist wajib >= 4 (dilonggarkan dari 5)
   rsi_period: 14
   rsi_buy_min: 50
   rsi_buy_max: 70
@@ -48,7 +48,8 @@ smc:
   ob_max_age: 40         # OB lebih tua dari X candle = kadaluarsa
   fvg_min_gap_atr: 0.15  # FVG minimal 0.15 x ATR biar tidak noise
   sl_atr_buffer: 0.5     # SL di luar zona +/- 0.5 x ATR
-  tp1_min_r: 1.5         # liquidity pool terdekat min 1.5R, kalau kurang = skip
+  tp1_min_r: 1.2         # liquidity pool terdekat min 1.2R (dilonggarkan dari 1.5)
+  max_distance_atr: 3.0  # jarak max harga ke zona (dilonggarkan dari 2.0)
   tp1_r_fallback: 2.0
   hold_after_tp2: false  # SMC close di TP2 (target liquidity pool)
   allow_counter_trend: true  # hanya jika sweep H1 + CHoCH (dicek kode)
@@ -62,7 +63,8 @@ scalp:
   sd_base_max_range_atr: 0.5
   zone_max_age: 60       # candle M5
   pa_min_wick_pct: 60    # pin bar: ekor >= 60% range
-  min_score: 4           # checklist wajib >= 4 dari 6
+  min_score: 3           # checklist wajib >= 3 dari 6 (searah bias; dilonggarkan dari 4)
+  counter_trend_min_score: 4  # zona lawan bias butuh skor lebih tinggi
   sl_atr_buffer: 0.4
   tp1_r: 1.0
   tp2_min_r: 1.5

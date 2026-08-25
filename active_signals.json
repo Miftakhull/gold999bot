@@ -1,24 +1,24 @@
 {
  "active": [],
  "tg_offset": 211381621,
- "last_bar": "2026-08-25 15:15:00+00:00",
+ "last_bar": "2026-08-26 09:15:00+00:00",
  "weekly_sent": "",
  "bias_cache": {
-  "m15_bar": "2026-08-25 15:15:00+00:00",
+  "m15_bar": "2026-08-26 09:15:00+00:00",
   "bias": {
-   "direction": "range",
-   "structure": "range",
-   "slope": -4.499731612616415
+   "direction": "bull",
+   "structure": "bull",
+   "slope": 4.8162941569253235
   },
-  "bias_m15": "range",
+  "bias_m15": "bull",
   "h1_levels": [
    {
     "name": "PDH",
-    "price": 4631.91226
+    "price": 4624.70518
    },
    {
     "name": "PDL",
-    "price": 4545.86781
+    "price": 4600.88082
    },
    {
     "name": "Asia High",
@@ -26,7 +26,7 @@
    },
    {
     "name": "Asia Low",
-    "price": 4455.52334
+    "price": 4473.67244
    }
   ]
  }

@@ -25,15 +25,21 @@ def build_scalp(df_m5, zones, bias, h1_levels, cfg, atr_m5):
     if atr_m5 < s["atr_min"]:
         return None, {"reason": f"ATR M5 {atr_m5:.2f} < {s['atr_min']} (market mati/spread)"}
 
-    direction = bias  # hanya zona searah bias
+    direction = bias
     ztype = "bull" if direction == "bull" else "bear"
+    counter = False
     last = df_m5.iloc[-1]
     last_price = float(last["Close"])
 
-    # zona searah bias yang paling baru terbentuk & sedang didekati harga
+    # zona searah bias dulu; kalau tidak ada, zona lawan bias diperbolehkan
+    # (counter-trend scalp) dengan syarat skor lebih tinggi
     candidates = [z for z in zones if z["type"] == ztype]
     if not candidates:
-        return None, {"reason": "tidak ada zona fresh searah bias"}
+        counter = True
+        ztype = "bear" if direction == "bull" else "bull"
+        candidates = [z for z in zones if z["type"] == ztype]
+        if not candidates:
+            return None, {"reason": "tidak ada zona fresh sama sekali"}
     candidates.sort(key=lambda z: z["time"], reverse=True)
     zone = None
     for z in candidates:
@@ -67,8 +73,10 @@ def build_scalp(df_m5, zones, bias, h1_levels, cfg, atr_m5):
     if confluence:
         score += 1
         checks["htf_confluence"] = True
-    if score < s["min_score"]:
-        return None, {"reason": f"skor {score}/{max_score} < {s['min_score']}", "score": score}
+    required = s.get("counter_trend_min_score", s["min_score"] + 1) if counter else s["min_score"]
+    if score < required:
+        return None, {"reason": f"skor {score}/{max_score} < {required}"
+                     + (" (counter-trend)" if counter else ""), "score": score}
 
     entry = float(last["Close"])
     if ztype == "bull":
@@ -104,6 +112,7 @@ def build_scalp(df_m5, zones, bias, h1_levels, cfg, atr_m5):
         "max_score": max_score,
         "checks": checks,
         "pattern": pattern,
+        "counter_trend": counter,
         "zone": {"top": zone["top"], "bottom": zone["bottom"], "strength": round(zone["strength"], 1)},
         "bar_time": last.name,
     }
@@ -243,7 +252,7 @@ def build_smc(df_m15, smc_ctx, cfg, ind):
     # entry = batas zona terdekat ke harga; hanya jika harga dekat zona (belum lari jauh)
     entry = zone["bottom"] if direction == "bull" else zone["top"]
     dist = abs(float(last["Close"]) - entry)
-    if dist > 2.0 * atr:
+    if dist > s.get("max_distance_atr", 2.0) * atr:
         return None, {"reason": f"harga terlalu jauh dari zona ({dist:.1f} > 2 ATR)"}
 
     if direction == "bull":
