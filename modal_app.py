@@ -26,7 +26,7 @@ volume = modal.Volume.from_name("goldbot-data", create_if_missing=True)
 
 @app.function(
     image=image,
-    schedule=modal.Cron("12-59/15 * * * *"),  # offset +12 menit: PC jalan duluan (menit 9/24/39/54)
+    schedule=modal.Cron("2-59/15 * * * *"),  # 2 menit setelah candle M15 close: 02:02 dst. (UTC)
     secrets=[modal.Secret.from_name("goldbot-secrets")],
     volumes={"/data": volume},
     timeout=300,
