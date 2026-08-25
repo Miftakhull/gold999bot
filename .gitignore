@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.env
+secret.txt
+test_m15.png

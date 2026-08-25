@@ -1,0 +1,81 @@
+# ============================================================
+# Gold AI Signal Bot - Konfigurasi Strategi
+# Semua angka strategi bisa diubah di sini tanpa sentuh kode
+# ============================================================
+
+symbol: "XAU/USD"
+entry_tf: "15min"        # timeframe eksekusi
+bias_tf: "1h"            # timeframe bias trend
+lookback_entry: 300      # jumlah candle M15 yang diambil
+lookback_bias: 150       # jumlah candle H1 yang diambil
+
+# ---------- Layer 0: Guard ----------
+guards:
+  atr_min: 2.0           # ATR14 M15 minimum (market mati = skip)
+  atr_max: 15.0          # ATR14 M15 maksimum (volatilitas gila = skip)
+  spike_atr_mult: 3.0    # candle > 3x ATR = news spike, skip 2 candle
+  spike_skip_candles: 2
+  max_signals_per_day: 3
+  cooldown_hours: 4      # cooldown per arah
+
+# ---------- Jalur TREND ----------
+trend:
+  ema_fast: 50           # H1
+  ema_slow: 200          # H1
+  ema_slope_ref: 20      # H1
+  ema_entry: 20          # M15 (untuk trailing & slope)
+  swing_period: 20       # swing high/low M15 untuk breakout
+  min_score: 5           # checklist wajib >= 5 dari 7
+  rsi_period: 14
+  rsi_buy_min: 50
+  rsi_buy_max: 70
+  rsi_sell_min: 30
+  rsi_sell_max: 50
+  vol_avg_period: 20
+  vol_breakout_mult: 1.5
+  sl_atr_buffer: 1.0     # SL = swing +/- 1.0 x ATR
+  tp1_r: 1.0
+  tp2_r: 2.5
+  hold_after_tp2: true   # runner mode untuk TREND
+  runner_trail: "ema20"  # ema20 | swing
+  discount_pct: 50       # buy hanya dari bawah 50% dealing range H1
+
+# ---------- Jalur SMC ----------
+smc:
+  bos_lookback: 60       # candle M15 utk deteksi BOS/struktur
+  ob_max_age: 40         # OB lebih tua dari X candle = kadaluarsa
+  fvg_min_gap_atr: 0.15  # FVG minimal 0.15 x ATR biar tidak noise
+  sl_atr_buffer: 0.5     # SL di luar zona +/- 0.5 x ATR
+  tp1_min_r: 1.5         # liquidity pool terdekat min 1.5R, kalau kurang = skip
+  tp1_r_fallback: 2.0
+  hold_after_tp2: false  # SMC close di TP2 (target liquidity pool)
+  allow_counter_trend: true  # hanya jika sweep H1 + CHoCH (dicek kode)
+
+# ---------- Gate ----------
+gate:
+  confluence_confidence: 80
+  perfect_confidence: 85
+  signal_expiry_candles: 2   # entry tak tersentuh 2 candle = VOID
+
+# ---------- Runner ----------
+runner:
+  trail_ema_period: 20   # EMA20 M15 utk trailing
+  trail_swing_period: 5  # swing M15 utk trailing (metode swing)
+
+# ---------- Monitor (anti-miss) ----------
+monitor:
+  enabled: true
+  max_per_day: 2
+  near_miss_score: 4     # TREND skor 4 (kurang 1) -> kirim monitor
+
+# ---------- Telegram & tampilan ----------
+telegram:
+  timezone: "Asia/Jakarta"
+  account_equity: 1000   # utk saran lot
+  risk_pct: 1.0          # risk per trade %
+  weekly_recap_hour: 8   # jam WIB kirim rekap Senin
+
+# ---------- AI ----------
+ai:
+  timeout: 120           # detik
+  max_tokens: 1500
