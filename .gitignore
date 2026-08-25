@@ -3,3 +3,4 @@ __pycache__/
 .env
 secret.txt
 test_m15.png
+setup_secrets.py
