@@ -1,5 +1,113 @@
 """Bangun sinyal lengkap (entry/SL/TP) dari hasil hitung engine + checklist skor."""
-from indicators import swing_high, swing_low, dealing_range
+from indicators import swing_high, swing_low, dealing_range, ema, structure_direction
+
+
+def bias_m15(df_m15, cfg_s):
+    """Bias utk scalp: EMA20/50 M15 + struktur."""
+    c = df_m15["Close"]
+    e20, e50 = ema(c, cfg_s["bias_ema_fast"]), ema(c, cfg_s["bias_ema_slow"])
+    struct = structure_direction(df_m15, 40)
+    if float(e20.iloc[-1]) > float(e50.iloc[-1]) and struct == "bull":
+        return "bull"
+    if float(e20.iloc[-1]) < float(e50.iloc[-1]) and struct == "bear":
+        return "bear"
+    return "range"
+
+
+def build_scalp(df_m5, zones, bias, h1_levels, cfg, atr_m5):
+    """
+    Scalp S/D + PA. Return (signal|None, info).
+    Wajib: zona fresh searah bias + konfirmasi PA. Skor >= min_score.
+    """
+    s = cfg["scalp"]
+    if bias == "range":
+        return None, {"reason": "bias M15 range -> scalp mati"}
+    if atr_m5 < s["atr_min"]:
+        return None, {"reason": f"ATR M5 {atr_m5:.2f} < {s['atr_min']} (market mati/spread)"}
+
+    direction = bias  # hanya zona searah bias
+    ztype = "bull" if direction == "bull" else "bear"
+    last = df_m5.iloc[-1]
+    last_price = float(last["Close"])
+
+    # zona searah bias yang paling baru terbentuk & sedang didekati harga
+    candidates = [z for z in zones if z["type"] == ztype]
+    if not candidates:
+        return None, {"reason": "tidak ada zona fresh searah bias"}
+    candidates.sort(key=lambda z: z["time"], reverse=True)
+    zone = None
+    for z in candidates:
+        touched = (last_price <= z["top"] + 0.2 * atr_m5) if ztype == "bull" \
+            else (last_price >= z["bottom"] - 0.2 * atr_m5)
+        if touched:
+            zone = z
+            break
+    if zone is None:
+        return None, {"reason": "belum ada pullback ke zona"}
+
+    # konfirmasi price action pada candle terakhir (sudah close)
+    from price_action import confirm_pa, has_stop_hunt
+    ok_pa, pattern = confirm_pa(df_m5, zone, ztype == "bull", s["pa_min_wick_pct"])
+    if not ok_pa:
+        return None, {"reason": "belum ada konfirmasi PA"}
+
+    # checklist skor
+    score, max_score = 2, 6  # zona fresh + PA = wajib
+    checks = {"zone_fresh": True, "pa": pattern}
+    if zone["strength"] >= 2.0:
+        score += 2
+        checks["strong_impulse"] = True
+    if has_stop_hunt(df_m5, zone, ztype == "bull"):
+        score += 2
+        checks["stop_hunt"] = True
+    confluence = any(abs(lv["price"] - zone["top"]) <= 0.5 * atr_m5
+                     or abs(lv["price"] - zone["bottom"]) <= 0.5 * atr_m5
+                     or zone["bottom"] <= lv["price"] <= zone["top"]
+                     for lv in (h1_levels or []))
+    if confluence:
+        score += 1
+        checks["htf_confluence"] = True
+    if score < s["min_score"]:
+        return None, {"reason": f"skor {score}/{max_score} < {s['min_score']}", "score": score}
+
+    entry = float(last["Close"])
+    if ztype == "bull":
+        sl = zone["bottom"] - s["sl_atr_buffer"] * atr_m5
+    else:
+        sl = zone["top"] + s["sl_atr_buffer"] * atr_m5
+    risk = abs(entry - sl)
+    if risk <= 0:
+        return None, {"reason": "risk invalid"}
+    tp1 = entry + risk * s["tp1_r"] if ztype == "bull" else entry - risk * s["tp1_r"]
+
+    # TP2: zona berlawanan terdekat / level liquidity, min 1.5R
+    targets = [z["bottom"] if z["type"] == "bear" else z["top"] for z in zones if z["type"] != ztype]
+    targets += [lv["price"] for lv in (h1_levels or [])]
+    if ztype == "bull":
+        ahead = sorted([p for p in targets if p >= entry + s["tp2_min_r"] * risk])
+    else:
+        ahead = sorted([p for p in targets if p <= entry - s["tp2_min_r"] * risk], reverse=True)
+    if not ahead:
+        return None, {"reason": "tidak ada target >= 1.5R -> skip"}
+    tp2 = ahead[0]
+
+    signal = {
+        "strategy": "SCALP",
+        "direction": "Buy" if ztype == "bull" else "Sell",
+        "entry": entry,
+        "sl": sl,
+        "tp1": tp1,
+        "tp2": tp2,
+        "risk": risk,
+        "atr": atr_m5,
+        "score": score,
+        "max_score": max_score,
+        "checks": checks,
+        "pattern": pattern,
+        "zone": {"top": zone["top"], "bottom": zone["bottom"], "strength": round(zone["strength"], 1)},
+        "bar_time": last.name,
+    }
+    return signal, {"reason": "ok", "score": score}
 
 
 def build_trend(df_m15, df_h1, cfg, ind):

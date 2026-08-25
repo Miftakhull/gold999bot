@@ -30,12 +30,13 @@ def check_active(state, last_price, cfg, tg, secrets):
         risk = s["risk"]
 
         # VOID: entry tidak tersentuh dalam N candle
-        if s["status"] == "ACTIVE" and s.get("bars_elapsed", 0) >= g["signal_expiry_candles"]:
+        expiry = s.get("expiry", g["signal_expiry_candles"])
+        if s["status"] == "ACTIVE" and s.get("bars_elapsed", 0) >= expiry:
             _never_touched = (d == "Buy" and last_price < entry) or (d == "Sell" and last_price > entry)
             if _never_touched:
                 tg.send_message(secrets["TELEGRAM_BOT_TOKEN"], secrets["TELEGRAM_CHAT_ID"],
                                 f"⚠️ <b>SIGNAL VOID</b> — XAUUSD {d} @ {entry:.2f} tidak tercapai "
-                                f"dalam {g['signal_expiry_candles']} candle. Tidak dihitung menang/kalah.")
+                                f"dalam {expiry} candle. Tidak dihitung menang/kalah.")
                 logger.update_status(s, "VOID")
                 continue
 
@@ -117,8 +118,8 @@ def check_active(state, last_price, cfg, tg, secrets):
     state["active"] = still_active
 
 
-def add_signal(state, sig, hold, trail_method):
-    state["active"].append({
+def add_signal(state, sig, hold, trail_method, expiry=None):
+    entry = {
         "strategy": sig["strategy"],
         "direction": sig["direction"],
         "entry": sig["entry"],
@@ -131,4 +132,7 @@ def add_signal(state, sig, hold, trail_method):
         "trail_method": trail_method,
         "bars_elapsed": 0,
         "bar_time": str(sig["bar_time"]),
-    })
+    }
+    if expiry is not None:
+        entry["expiry"] = expiry
+    state["active"].append(entry)

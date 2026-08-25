@@ -65,7 +65,7 @@ DISCLAIMER = ("\n\n⚠️ Sinyal otomatis, bukan nasihat keuangan. "
 
 
 def format_signal(sig, cfg_tg):
-    tag = "📈 TREND" if sig["strategy"] == "TREND" else "🧠 SMC"
+    tag = {"TREND": "📈 TREND", "SMC": "🧠 SMC", "SCALP": "⚡ SCALP"}[sig["strategy"]]
     arrow = "🟢 BUY" if sig["direction"] == "Buy" else "🔴 SELL"
     equity = cfg_tg["account_equity"]
     risk_usd = equity * cfg_tg["risk_pct"] / 100

@@ -29,9 +29,10 @@ def fetch_twelvedata(symbol, interval, outputsize, api_key):
 
 def fetch_yfinance(interval, outputsize):
     import yfinance as yf
-    yf_interval = "15m" if interval == "15min" else "60m"
-    df = yf.download("GC=F", period="60d" if yf_interval == "15m" else "730d",
-                     interval=yf_interval, progress=False)
+    yf_map = {"5min": "5m", "15min": "15m", "1h": "60m"}
+    yf_interval = yf_map.get(interval, "15m")
+    period = {"5m": "60d", "15m": "60d", "60m": "730d"}.get(yf_interval, "60d")
+    df = yf.download("GC=F", period=period, interval=yf_interval, progress=False)
     if df is None or df.empty:
         raise RuntimeError("yfinance kosong")
     if isinstance(df.columns, pd.MultiIndex):

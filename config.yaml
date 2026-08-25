@@ -4,10 +4,12 @@
 # ============================================================
 
 symbol: "XAU/USD"
-entry_tf: "15min"        # timeframe eksekusi
+entry_tf: "15min"        # timeframe eksekusi TREND & SMC
+scalp_tf: "5min"         # timeframe eksekusi SCALP
 bias_tf: "1h"            # timeframe bias trend
 lookback_entry: 300      # jumlah candle M15 yang diambil
 lookback_bias: 150       # jumlah candle H1 yang diambil
+lookback_scalp: 200      # jumlah candle M5 yang diambil
 
 # ---------- Layer 0: Guard ----------
 guards:
@@ -50,6 +52,25 @@ smc:
   tp1_r_fallback: 2.0
   hold_after_tp2: false  # SMC close di TP2 (target liquidity pool)
   allow_counter_trend: true  # hanya jika sweep H1 + CHoCH (dicek kode)
+
+# ---------- Jalur SCALP (M5, Supply & Demand + Price Action) ----------
+scalp:
+  bias_ema_fast: 20      # M15
+  bias_ema_slow: 50      # M15
+  sd_impulse_atr: 1.5    # impuls minimal utk zona valid
+  sd_base_max_candles: 3
+  sd_base_max_range_atr: 0.5
+  zone_max_age: 60       # candle M5
+  pa_min_wick_pct: 60    # pin bar: ekor >= 60% range
+  min_score: 4           # checklist wajib >= 4 dari 6
+  sl_atr_buffer: 0.4
+  tp1_r: 1.0
+  tp2_min_r: 1.5
+  expiry_candles: 1      # sinyal scalp basi cepat
+  cooldown_minutes: 90
+  max_per_day: 6
+  atr_min: 0.8           # ATR M5 minimum (spread guard)
+  confidence: 80         # threshold AI utk scalp
 
 # ---------- Gate ----------
 gate:
