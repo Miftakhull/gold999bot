@@ -1,28 +1,28 @@
 {
-  "total_count": 15,
+  "total_count": 18,
   "workflow_runs": [
     {
-      "id": 32810163408,
+      "id": 32811118911,
       "name": "Gold Signal Bot",
-      "node_id": "WFR_kwLOUDN7js8AAAAHo6Nc0A",
+      "node_id": "WFR_kwLOUDN7js8AAAAHo7HxPw",
       "head_branch": "main",
-      "head_sha": "e1fa90ce99e8a0610e70a03e2644a4ef9be07cac",
+      "head_sha": "cd08508c29bda24a3a639532d79fa1e66c99d2c9",
       "path": ".github/workflows/signal.yml",
       "display_title": "Gold Signal Bot",
-      "run_number": 15,
+      "run_number": 18,
       "event": "workflow_dispatch",
       "status": "in_progress",
       "conclusion": null,
       "workflow_id": 341703099,
-      "check_suite_id": 88880042141,
-      "check_suite_node_id": "CS_kwDOUDN7js8AAAAUsanQnQ",
-      "url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32810163408",
-      "html_url": "https://github.com/Miftakhull/gold999bot/actions/runs/32810163408",
+      "check_suite_id": 88882412056,
+      "check_suite_node_id": "CS_kwDOUDN7js8AAAAUsc36GA",
+      "url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32811118911",
+      "html_url": "https://github.com/Miftakhull/gold999bot/actions/runs/32811118911",
       "pull_requests": [
 
       ],
-      "created_at": "2026-08-25T04:45:21Z",
-      "updated_at": "2026-08-25T04:45:27Z",
+      "created_at": "2026-08-25T05:00:21Z",
+      "updated_at": "2026-08-25T05:00:28Z",
       "actor": {
         "login": "github-actions[bot]",
         "id": 41898282,
@@ -48,7 +48,7 @@
       "referenced_workflows": [
 
       ],
-      "run_started_at": "2026-08-25T04:45:21Z",
+      "run_started_at": "2026-08-25T05:00:21Z",
       "triggering_actor": {
         "login": "github-actions[bot]",
         "id": 41898282,
@@ -70,19 +70,19 @@
         "user_view_type": "public",
         "site_admin": false
       },
-      "jobs_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32810163408/jobs",
-      "logs_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32810163408/logs",
-      "check_suite_url": "https://api.github.com/repos/Miftakhull/gold999bot/check-suites/88880042141",
-      "artifacts_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32810163408/artifacts",
-      "cancel_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32810163408/cancel",
-      "rerun_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32810163408/rerun",
+      "jobs_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32811118911/jobs",
+      "logs_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32811118911/logs",
+      "check_suite_url": "https://api.github.com/repos/Miftakhull/gold999bot/check-suites/88882412056",
+      "artifacts_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32811118911/artifacts",
+      "cancel_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32811118911/cancel",
+      "rerun_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/runs/32811118911/rerun",
       "previous_attempt_url": null,
       "workflow_url": "https://api.github.com/repos/Miftakhull/gold999bot/actions/workflows/341703099",
       "head_commit": {
-        "id": "e1fa90ce99e8a0610e70a03e2644a4ef9be07cac",
-        "tree_id": "b7092ee61bef59428fc47907edb2c2f89babf68f",
-        "message": "proxy AI via Cloudflare Worker + parser verdict anti-JSON-rusak",
-        "timestamp": "2026-08-25T04:40:40Z",
+        "id": "cd08508c29bda24a3a639532d79fa1e66c99d2c9",
+        "tree_id": "e700a38affe0a295c6db7b0263c77bafc8e7bad5",
+        "message": "fix kondisi step dummy test",
+        "timestamp": "2026-08-25T04:56:11Z",
         "author": {
           "name": "Miftakhull",
           "email": "Miftakhull@users.noreply.github.com"
