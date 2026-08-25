@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: gold-signal
@@ -15,7 +16,7 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -44,3 +45,16 @@ jobs:
           git diff --cached --quiet || git commit -m "log: update sinyal $(date -u +%FT%TZ)"
           git pull --rebase origin main || true
           git push
+
+      - name: Chain next run (tepat di candle 15m berikutnya)
+        run: |
+          now=$(date +%s)
+          next=$(( (now / 900 + 1) * 900 + 20 ))
+          wait=$(( next - now ))
+          echo "Menunggu ${wait}s sampai batas candle berikutnya..."
+          sleep $wait
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/signal.yml/dispatches \
+            -d '{"ref":"main"}'
