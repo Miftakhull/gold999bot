@@ -78,10 +78,31 @@ def validate(secrets, cfg, data_payload, charts):
         raise PermissionError("AI endpoint 403 (Cloudflare blok IP ini)")
     r.raise_for_status()
     content_txt = r.json()["choices"][0]["message"]["content"]
-    content_txt = content_txt.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-    result = json.loads(content_txt)
+    result = _parse_verdicts(content_txt)
     for k in ("trend", "smc"):
         if k not in result:
             raise ValueError(f"AI response tidak punya key '{k}': {content_txt[:200]}")
     result.setdefault("scalp", {"verdict": "no", "confidence": 0, "reasoning": "tidak dievaluasi"})
+    return result
+
+
+def _parse_verdicts(text):
+    """Parse JSON verdict; kalau AI balas JSON rusak, pakai parser regex cadangan."""
+    text = text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    # cadangan: ekstrak per-strategi dengan regex
+    import re
+    result = {}
+    for strat in ("trend", "smc", "scalp"):
+        m = re.search(
+            rf'"{strat}"\s*:\s*{{.*?"verdict"\s*:\s*"(\w+)".*?"confidence"\s*:\s*(\d+).*?"reasoning"\s*:\s*"(.*?)"\s*}}',
+            text, re.DOTALL)
+        if m:
+            result[strat] = {"verdict": m.group(1), "confidence": int(m.group(2)),
+                             "reasoning": m.group(3)}
+    if not result:
+        raise ValueError(f"AI response tidak bisa diparse: {text[:200]}")
     return result
